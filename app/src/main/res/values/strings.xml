@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">ClingDemo</string>
+    <string name="Start">Start</string>
+    <string name="Stop">Stop</string>
+    <string name="title_activity_dmr_cp">DMRCPActivity</string>
+    <string name="Connect">Connect</string>
+    <string name="Disconnect">Disconnect</string>
+    <string name="Play">Play</string>
+    <string name="Next">Next</string>
+    <string name="Pause">Pause</string>
+    <string name="SetVolume">SetVolume</string>
+    <string name="SetProgress">SetProgress</string>
+    <string name="GetProgress">GetProgress</string>
+    <string name="GetDuration">GetDuration</string>
+</resources>
