@@ -6,10 +6,12 @@
     <string name="Connect">Connect</string>
     <string name="Disconnect">Disconnect</string>
     <string name="Play">Play</string>
-    <string name="Next">Next</string>
     <string name="Pause">Pause</string>
     <string name="SetVolume">SetVolume</string>
+    <string name="GetVolume">GetVolume</string>
     <string name="SetProgress">SetProgress</string>
-    <string name="GetProgress">GetProgress</string>
-    <string name="GetDuration">GetDuration</string>
+    <string name="GetPositionInfo">GetPosition</string>
+    <string name="ShowPhoto">ShowPhoto</string>
+    <string name="StartSlideshow">StartSlideshow</string>
+    <string name="StopSlideshow">StopSlideshow</string>
 </resources>

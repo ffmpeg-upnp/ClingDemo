@@ -1,15 +1,23 @@
 package ouyang.clingdemo.upnp;
 
-import org.fourthline.cling.model.meta.Device;
-import org.fourthline.cling.model.meta.Service;
+import org.fourthline.cling.model.meta.RemoteDevice;
+import org.fourthline.cling.model.meta.RemoteService;
 import org.fourthline.cling.model.types.ServiceType;
 
 public class UpnpDevice {
 
-    private Device device;
+    private RemoteDevice device;
 
-    public UpnpDevice(Device device) {
+    public UpnpDevice(RemoteDevice device) {
         this.device = device;
+    }
+
+    public String getDeviceIp() {
+        if (device.getIdentity().getDescriptorURL() != null) {
+            return device.getIdentity().getDescriptorURL().getHost();
+        }
+
+        return null;
     }
 
     public String getDeviceId() {
@@ -24,7 +32,7 @@ public class UpnpDevice {
         return device.getType().getType();
     }
 
-    public Service getService(ServiceType type) {
+    public RemoteService getService(ServiceType type) {
         return device.findService(type);
     }
 

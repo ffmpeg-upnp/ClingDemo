@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements UpnpDeviceListene
 
     public void onButtonStop(View view) {
         UpnpManager.getControlPoint().stopScan();
+        deviceAdapter.clear();
     }
 
     @Override

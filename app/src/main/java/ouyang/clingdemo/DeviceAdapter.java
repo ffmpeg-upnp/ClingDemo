@@ -35,7 +35,7 @@ public class DeviceAdapter extends ArrayAdapter<UpnpDevice> {
         }
 
         TextView name = (TextView) convertView.findViewById(R.id.device_name);
-        name.setText(device.getFriendlyName());
+        name.setText(device.getFriendlyName() + "(" + device.getDeviceIp() + ")");
 
         return convertView;
     }

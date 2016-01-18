@@ -5,7 +5,7 @@ public class UpnpManager {
     private static final String TAG = UpnpManager.class.getSimpleName();
     private static final Object classLock = UpnpManager.class;
     private static UpnpManager instance = null;
-    private static UpnpControlPoint cp;
+    private static UpnpAVControlPoint cp;
 
     public static UpnpManager getInstance() {
         synchronized (classLock) {
@@ -21,10 +21,10 @@ public class UpnpManager {
     }
 
     public void initialize() {
-        cp = new UpnpControlPoint();
+        cp = new UpnpAVControlPoint();
     }
 
-    public static UpnpControlPoint getControlPoint() {
+    public static UpnpAVControlPoint getControlPoint() {
         synchronized (classLock) {
             return cp;
         }

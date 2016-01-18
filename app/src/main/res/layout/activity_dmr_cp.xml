@@ -1,34 +1,136 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="ouyang.clingdemo.DmrCpActivity">
+    android:layout_height="wrap_content"
+    android:clickable="false"
+    android:focusable="false"
+    android:longClickable="false"
+    android:orientation="vertical" >
 
-    <android.support.design.widget.AppBarLayout
+    <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:text="@string/Connect"
+        android:id="@+id/Connect"
+        android:onClick="onButtonConnect"
+        />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>
-
-    <include layout="@layout/content_dmr_cp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
+    <Button
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
+        android:text="@string/Disconnect"
+        android:id="@+id/Disconnect"
+        android:onClick="onButtonDisconnect"
+        />
 
-</android.support.design.widget.CoordinatorLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Play"
+        android:id="@+id/Play"
+        android:onClick="onButtonPlay"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Stop"
+        android:id="@+id/Stop"
+        android:onClick="onButtonStop"
+        />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Pause"
+        android:id="@+id/Pause"
+        android:onClick="onButtonPlayPause"
+        />
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:longClickable="false"
+        android:orientation="horizontal" >
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/SetVolume"
+            android:id="@+id/SetVolume"
+            android:onClick="onButtonSetVolume"
+            android:layout_weight="1" />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/GetVolume"
+            android:id="@+id/Next"
+            android:onClick="onButtonGetVolume"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:longClickable="false"
+        android:orientation="horizontal" >
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/SetProgress"
+            android:id="@+id/SetProgress"
+            android:onClick="onButtonSetProgress"
+            android:layout_weight="1"
+            />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/GetPositionInfo"
+            android:id="@+id/GetPositionInfo"
+            android:onClick="onButtonGetPositionInfo"
+            android:layout_weight="1"
+            />
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/ShowPhoto"
+        android:id="@+id/ShowPhoto"
+        android:onClick="onButtonShowPhoto"
+        />
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        android:longClickable="false"
+        android:orientation="horizontal" >
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/StartSlideshow"
+            android:id="@+id/StartSlideshow"
+            android:onClick="onButtonStartSlideshow"
+            android:layout_weight="1" />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/StopSlideshow"
+            android:id="@+id/StopSlideshow"
+            android:onClick="onButtonStopSlideshow"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+</LinearLayout>
