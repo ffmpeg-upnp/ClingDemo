@@ -14,8 +14,10 @@ public class UpnpDevice {
     }
 
     public String getDeviceIp() {
-        if (device.getIdentity().getDescriptorURL() != null) {
-            return device.getIdentity().getDescriptorURL().getHost();
+        if (device.getIdentity() != null) {
+            if (device.getIdentity().getDescriptorURL() != null) {
+                return device.getIdentity().getDescriptorURL().getHost();
+            }
         }
 
         return null;

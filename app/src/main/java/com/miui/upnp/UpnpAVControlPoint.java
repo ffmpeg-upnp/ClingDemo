@@ -437,6 +437,8 @@ public class UpnpAVControlPoint implements RegistryListener {
             public void received(ActionInvocation actionInvocation, ProtocolInfos sink, ProtocolInfos source) {
                 UpnpDevice device = new UpnpDevice(remoteDevice);
 
+                Log.d(TAG, device.getFriendlyName() + " " + device.getDeviceIp());
+
                 for (int i = 0; i < sink.size(); i++) {
                     ProtocolInfo info = sink.get(i);
                     if (info.getContentFormatMimeType().getType().equals("video")) {
@@ -458,6 +460,8 @@ public class UpnpAVControlPoint implements RegistryListener {
 
                 UpnpDevice device = new UpnpDevice(remoteDevice);
                 device.setSupportVideo(true);
+
+                Log.d(TAG, device.getFriendlyName() + " " + device.getDeviceIp());
 
                 devices.put(device.getDeviceId(), device);
 
