@@ -1,5 +1,7 @@
 package com.miui.upnp;
 
+import org.fourthline.cling.model.meta.DeviceDetails;
+import org.fourthline.cling.model.meta.ManufacturerDetails;
 import org.fourthline.cling.model.meta.RemoteDevice;
 import org.fourthline.cling.model.meta.RemoteService;
 import org.fourthline.cling.model.types.ServiceType;
@@ -13,6 +15,20 @@ public class UpnpDevice {
         this.device = device;
     }
 
+    public String getManufacturerURL() {
+        DeviceDetails details = device.getDetails();
+        if (details != null) {
+            ManufacturerDetails manu = details.getManufacturerDetails();
+            if (manu != null) {
+                if (manu.getManufacturerURI() != null) {
+                    return manu.getManufacturerURI().toString();
+                }
+            }
+        }
+
+        return null;
+    }
+
     public String getDeviceIp() {
         if (device.getIdentity() != null) {
             if (device.getIdentity().getDescriptorURL() != null) {
@@ -24,7 +40,13 @@ public class UpnpDevice {
     }
 
     public String getDeviceId() {
-        return device.getIdentity().getUdn().getIdentifierString();
+        if (device.getIdentity() != null) {
+            if (device.getIdentity().getUdn() != null) {
+                return device.getIdentity().getUdn().getIdentifierString();
+            }
+        }
+
+        return getDeviceIp();
     }
 
     public String getFriendlyName() {

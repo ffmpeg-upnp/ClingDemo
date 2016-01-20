@@ -34,6 +34,7 @@ import org.fourthline.cling.support.model.WriteStatus;
 import org.fourthline.cling.support.model.item.MusicTrack;
 import org.fourthline.cling.support.renderingcontrol.callback.GetVolume;
 import org.fourthline.cling.support.renderingcontrol.callback.SetVolume;
+import org.seamless.util.MimeType;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -96,6 +97,18 @@ public class UpnpAVControlPoint implements RegistryListener {
         }
 
         return false;
+    }
+
+    public String getConnectedDeviceIp() throws UpnpException {
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
+        if (dmr.isConnected()) {
+            return dmr.getDevice().getDeviceIp();
+        }
+
+        return null;
     }
 
     public void connect(String deviceId, MediaRenderer.EventListener listener) throws UpnpException {
@@ -383,6 +396,7 @@ public class UpnpAVControlPoint implements RegistryListener {
         int minute = (progress / 60) % 60;
         int hour = progress / 3600;
         String target = String.format("%1$02d:%2$02d:%3$02d", hour, minute, second);
+        Log.v(TAG, String.format("Seek: %s", target));
 
         this.upnp.getControlPoint().execute(new Seek(dmr.AVTransport(), SeekMode.ABS_TIME, target) {
             @Override
@@ -441,7 +455,16 @@ public class UpnpAVControlPoint implements RegistryListener {
 
                 for (int i = 0; i < sink.size(); i++) {
                     ProtocolInfo info = sink.get(i);
-                    if (info.getContentFormatMimeType().getType().equals("video")) {
+                    MimeType t = info.getContentFormatMimeType();
+                    if (t == null) {
+                        continue;
+                    }
+
+                    if (t.getType() == null) {
+                        continue;
+                    }
+
+                    if (t.getType().equals("video")) {
                         device.setSupportVideo(true);
                         break;
                     }
