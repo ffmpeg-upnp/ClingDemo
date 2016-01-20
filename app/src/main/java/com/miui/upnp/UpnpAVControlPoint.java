@@ -42,7 +42,7 @@ import java.util.Map;
 public class UpnpAVControlPoint implements RegistryListener {
 
     private static final String TAG = UpnpAVControlPoint.class.getSimpleName();
-    private Map<String, UpnpDevice> devices = new HashMap<>();
+    private Map<String, UpnpDevice> devices = new HashMap<String, UpnpDevice>();
     private UpnpService upnp;
     private MediaRenderer dmr;
     private UpnpDeviceListener listener;
@@ -419,18 +419,14 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     @Override
     public void remoteDeviceDiscoveryStarted(Registry registry, RemoteDevice remoteDevice) {
-//        Log.d(TAG, "remoteDeviceDiscoveryStarted");
     }
 
     @Override
     public void remoteDeviceDiscoveryFailed(Registry registry, RemoteDevice remoteDevice, Exception e) {
-//        Log.d(TAG, "remoteDeviceDiscoveryFailed");
     }
 
     @Override
     public void remoteDeviceAdded(Registry registry, final RemoteDevice remoteDevice) {
-//        Log.d(TAG, "remoteDeviceAdded");
-
         RemoteService cms = remoteDevice.findService(MediaRenderer.CMS);
         if (cms == null) {
             return;
@@ -459,19 +455,25 @@ public class UpnpAVControlPoint implements RegistryListener {
             @Override
             public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
                 Log.e(TAG, "failure: " + s);
+
+                UpnpDevice device = new UpnpDevice(remoteDevice);
+                device.setSupportVideo(true);
+
+                devices.put(device.getDeviceId(), device);
+
+                if (listener != null) {
+                    listener.onDeviceFound(device);
+                }
             }
         });
     }
 
     @Override
     public void remoteDeviceUpdated(Registry registry, RemoteDevice remoteDevice) {
-//        Log.d(TAG, "remoteDeviceUpdated");
     }
 
     @Override
     public void remoteDeviceRemoved(Registry registry, RemoteDevice remoteDevice) {
-//        Log.d(TAG, "remoteDeviceRemoved");
-
         UpnpDevice device = new UpnpDevice(remoteDevice);
         devices.remove(device.getDeviceId());
 
@@ -482,21 +484,17 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     @Override
     public void localDeviceAdded(Registry registry, LocalDevice localDevice) {
-//        Log.d(TAG, "localDeviceAdded");
     }
 
     @Override
     public void localDeviceRemoved(Registry registry, LocalDevice localDevice) {
-//        Log.d(TAG, "localDeviceRemoved");
     }
 
     @Override
     public void beforeShutdown(Registry registry) {
-//        Log.d(TAG, "beforeShutdown");
     }
 
     @Override
     public void afterShutdown() {
-//        Log.d(TAG, "afterShutdown");
     }
 }
