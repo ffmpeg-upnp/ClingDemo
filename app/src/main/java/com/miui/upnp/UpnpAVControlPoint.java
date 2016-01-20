@@ -1,4 +1,4 @@
-package ouyang.clingdemo.upnp;
+package com.miui.upnp;
 
 import android.util.Log;
 
@@ -7,8 +7,11 @@ import org.fourthline.cling.UpnpServiceImpl;
 import org.fourthline.cling.android.AndroidUpnpServiceConfiguration;
 import org.fourthline.cling.model.action.ActionInvocation;
 import org.fourthline.cling.model.message.UpnpResponse;
+import org.fourthline.cling.model.message.header.UDADeviceTypeHeader;
 import org.fourthline.cling.model.meta.LocalDevice;
 import org.fourthline.cling.model.meta.RemoteDevice;
+import org.fourthline.cling.model.meta.RemoteService;
+import org.fourthline.cling.model.types.UDADeviceType;
 import org.fourthline.cling.registry.Registry;
 import org.fourthline.cling.registry.RegistryListener;
 import org.fourthline.cling.support.avtransport.callback.GetPositionInfo;
@@ -18,15 +21,21 @@ import org.fourthline.cling.support.avtransport.callback.Play;
 import org.fourthline.cling.support.avtransport.callback.Seek;
 import org.fourthline.cling.support.avtransport.callback.SetAVTransportURI;
 import org.fourthline.cling.support.avtransport.callback.Stop;
-import org.fourthline.cling.support.igd.callback.GetStatusInfo;
-import org.fourthline.cling.support.model.Connection;
+import org.fourthline.cling.support.connectionmanager.callback.GetProtocolInfo;
+import org.fourthline.cling.support.contentdirectory.DIDLParser;
+import org.fourthline.cling.support.model.DIDLContent;
+import org.fourthline.cling.support.model.PersonWithRole;
 import org.fourthline.cling.support.model.PositionInfo;
+import org.fourthline.cling.support.model.ProtocolInfo;
+import org.fourthline.cling.support.model.ProtocolInfos;
 import org.fourthline.cling.support.model.SeekMode;
 import org.fourthline.cling.support.model.TransportInfo;
-import org.fourthline.cling.support.model.TransportState;
+import org.fourthline.cling.support.model.WriteStatus;
+import org.fourthline.cling.support.model.item.MusicTrack;
 import org.fourthline.cling.support.renderingcontrol.callback.GetVolume;
 import org.fourthline.cling.support.renderingcontrol.callback.SetVolume;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,30 +46,49 @@ public class UpnpAVControlPoint implements RegistryListener {
     private UpnpService upnp;
     private MediaRenderer dmr;
     private UpnpDeviceListener listener;
+    private boolean started;
 
     public UpnpAVControlPoint() {
-        upnp = new UpnpServiceImpl(new AndroidUpnpServiceConfiguration(8081), this);
-        dmr = new MediaRenderer(upnp.getControlPoint());
     }
 
-    public void startScan(UpnpDeviceListener listener) {
+    public void startScan(UpnpDeviceListener listener) throws UpnpException {
         Log.d(TAG, "startScan");
 
+        if (started) {
+            throw new UpnpException("already started");
+        }
+
+        this.started = true;
         this.listener = listener;
-        this.upnp.getControlPoint().search();
+        this.upnp = new UpnpServiceImpl(new AndroidUpnpServiceConfiguration(8081), this);
+        this.dmr = new MediaRenderer(this.upnp.getControlPoint());
+        this.upnp.getControlPoint().search(new UDADeviceTypeHeader(new UDADeviceType("MediaRenderer")));
     }
 
-    public void stopScan() {
+    public void stopScan() throws UpnpException {
         Log.d(TAG, "stopScan");
 
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
+        this.started = false;
         this.upnp.shutdown();
     }
 
-    public boolean isConnected() {
+    public boolean isConnected() throws UpnpException {
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
         return dmr.isConnected();
     }
 
-    public boolean isConnected(String ip) {
+    public boolean isConnected(String ip) throws UpnpException {
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
         if (dmr.isConnected()) {
             if (dmr.getDevice().getDeviceIp().equals(ip)) {
                 return true;
@@ -73,6 +101,10 @@ public class UpnpAVControlPoint implements RegistryListener {
     public void connect(String deviceId, MediaRenderer.EventListener listener) throws UpnpException {
         Log.d(TAG, "connect: " + deviceId);
 
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
         if (dmr.isConnected()) {
             throw new UpnpException("already connected");
         }
@@ -83,31 +115,52 @@ public class UpnpAVControlPoint implements RegistryListener {
         }
 
         dmr.setDevice(device);
-        dmr.setIgnoreStopped(true);
         dmr.setListener(listener);
-        dmr.subscribeAVT();
-        dmr.subscribeRCS();
-        dmr.setConnected(true);
+
+        this.connectIfNecessary();
     }
 
     public void disconnect() throws UpnpException {
         Log.d(TAG, "disconnect");
 
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
         if (! dmr.isConnected()) {
             throw new UpnpException("not connected");
         }
 
+        dmr.setConnected(false);
         dmr.unsubscribeAVT();
         dmr.unsubscribeRCS();
-        dmr.setConnected(false);
+    }
+
+    private void connectIfNecessary() throws UpnpException {
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
+        if (! dmr.isConnected()) {
+            dmr.setIgnoreStopped(true);
+            dmr.subscribeAVT();
+            dmr.subscribeRCS();
+            dmr.setConnected(true);
+        }
     }
 
     public void play(String url) throws UpnpException {
-        this.play(url, null);
+        this.play(url, null, null);
     }
 
-    public void play(final String url, final String title) throws UpnpException {
+    public void play(final String url, final String title, final String extra) throws UpnpException {
         Log.d(TAG, "play: " + url);
+
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
+        this.connectIfNecessary();
 
         this.upnp.getControlPoint().execute(new GetTransportInfo(dmr.AVTransport()) {
             @Override
@@ -117,7 +170,7 @@ public class UpnpAVControlPoint implements RegistryListener {
                 switch (transportInfo.getCurrentTransportState()) {
                     case STOPPED:
                         try {
-                            _play(url, title);
+                            _play(url, title, extra);
                         } catch (UpnpException e) {
                             e.printStackTrace();
                         }
@@ -139,7 +192,7 @@ public class UpnpAVControlPoint implements RegistryListener {
                                     Log.d(TAG, "Stop success");
 
                                     try {
-                                        _play(url, title);
+                                        _play(url, title, extra);
                                     } catch (UpnpException e) {
                                         e.printStackTrace();
                                     }
@@ -164,10 +217,42 @@ public class UpnpAVControlPoint implements RegistryListener {
         });
     }
 
-    public void _play(String url, String title) throws UpnpException {
+    private void _play(String url, String title, String extra) throws UpnpException {
         Log.d(TAG, "_play: " + url);
+        Log.d(TAG, "extra: " + extra);
 
-        this.upnp.getControlPoint().execute(new SetAVTransportURI(dmr.AVTransport(), url) {
+        String metadata = null;
+        UpnpAVExtra avExtra = new UpnpAVExtra();
+        if (avExtra.parse(extra)) {
+            long id = 0;
+            String parentId = "0";
+            String album = null;
+
+            try {
+                album = MediaCover.getAlbumUri(avExtra.getArtist());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            MusicTrack track = new MusicTrack(String.valueOf(id),
+                    parentId, title, avExtra.getArtist(), album, new PersonWithRole(avExtra.getArtist()));
+            track.setWriteStatus(WriteStatus.NOT_WRITABLE);
+
+            DIDLContent content = new DIDLContent();
+            content.addItem(track);
+
+            DIDLParser parser = new DIDLParser();
+
+            try {
+                metadata = parser.generate(content);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Log.d(TAG, "metadata: " + metadata);
+        }
+
+        this.upnp.getControlPoint().execute(new SetAVTransportURI(dmr.AVTransport(), url, metadata) {
             @Override
             public void success(ActionInvocation invocation) {
                 super.success(invocation);
@@ -195,6 +280,10 @@ public class UpnpAVControlPoint implements RegistryListener {
     public void stop() throws UpnpException {
         Log.d(TAG, "stop");
 
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
         this.upnp.getControlPoint().execute(new Stop(dmr.AVTransport()) {
             @Override
             public void success(ActionInvocation invocation) {
@@ -211,6 +300,10 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     public void setPlaybackRate(int rate) throws UpnpException {
         Log.d(TAG, "setPlaybackRate: " + rate);
+
+        if (! started) {
+            throw new UpnpException("not started");
+        }
 
         if (rate == 0) {
             this.upnp.getControlPoint().execute(new Pause(dmr.AVTransport()) {
@@ -231,6 +324,10 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     public void setVolume(int volume) throws UpnpException {
         Log.d(TAG, "setVolume");
+
+        if (! started) {
+            throw new UpnpException("not started");
+        }
 
         this.upnp.getControlPoint().execute(new SetVolume(dmr.RenderingControl(), volume) {
             @Override
@@ -257,6 +354,10 @@ public class UpnpAVControlPoint implements RegistryListener {
     public void getVolume(final GetVolumeHandler handler) throws UpnpException {
         Log.d(TAG, "getVolume");
 
+        if (! started) {
+            throw new UpnpException("not started");
+        }
+
         this.upnp.getControlPoint().execute(new GetVolume(dmr.RenderingControl()) {
             @Override
             public void received(ActionInvocation actionInvocation, int i) {
@@ -273,6 +374,10 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     public void setPlaybackProgress(int progress) throws UpnpException {
         Log.d(TAG, "setPlaybackProgress");
+
+        if (! started) {
+            throw new UpnpException("not started");
+        }
 
         int second = progress % 60;
         int minute = (progress / 60) % 60;
@@ -294,6 +399,10 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     public void getPositionInfo(final GetPositionInfoHandler handler) throws UpnpException {
         Log.d(TAG, "getPositionInfo");
+
+        if (! started) {
+            throw new UpnpException("not started");
+        }
 
         this.upnp.getControlPoint().execute(new GetPositionInfo(dmr.AVTransport()) {
             @Override
@@ -319,15 +428,39 @@ public class UpnpAVControlPoint implements RegistryListener {
     }
 
     @Override
-    public void remoteDeviceAdded(Registry registry, RemoteDevice remoteDevice) {
+    public void remoteDeviceAdded(Registry registry, final RemoteDevice remoteDevice) {
 //        Log.d(TAG, "remoteDeviceAdded");
 
-        UpnpDevice device = new UpnpDevice(remoteDevice);
-        devices.put(device.getDeviceId(), device);
-
-        if (listener != null) {
-            listener.onDeviceFound(device);
+        RemoteService cms = remoteDevice.findService(MediaRenderer.CMS);
+        if (cms == null) {
+            return;
         }
+
+        this.upnp.getControlPoint().execute(new GetProtocolInfo(cms) {
+            @Override
+            public void received(ActionInvocation actionInvocation, ProtocolInfos sink, ProtocolInfos source) {
+                UpnpDevice device = new UpnpDevice(remoteDevice);
+
+                for (int i = 0; i < sink.size(); i++) {
+                    ProtocolInfo info = sink.get(i);
+                    if (info.getContentFormatMimeType().getType().equals("video")) {
+                        device.setSupportVideo(true);
+                        break;
+                    }
+                }
+
+                devices.put(device.getDeviceId(), device);
+
+                if (listener != null) {
+                    listener.onDeviceFound(device);
+                }
+            }
+
+            @Override
+            public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
+                Log.e(TAG, "failure: " + s);
+            }
+        });
     }
 
     @Override

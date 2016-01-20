@@ -1,4 +1,4 @@
-package ouyang.clingdemo.upnp;
+package com.miui.upnp;
 
 import org.fourthline.cling.model.meta.RemoteDevice;
 import org.fourthline.cling.model.meta.RemoteService;
@@ -7,6 +7,7 @@ import org.fourthline.cling.model.types.ServiceType;
 public class UpnpDevice {
 
     private RemoteDevice device;
+    private boolean supportVideo;
 
     public UpnpDevice(RemoteDevice device) {
         this.device = device;
@@ -50,5 +51,13 @@ public class UpnpDevice {
     @Override
     public int hashCode() {
         return device != null ? device.hashCode() : 0;
+    }
+
+    public boolean isSupportVideo() {
+        return supportVideo;
+    }
+
+    public void setSupportVideo(boolean supportVideo) {
+        this.supportVideo = supportVideo;
     }
 }

@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import ouyang.clingdemo.upnp.UpnpDevice;
+import com.miui.upnp.UpnpDevice;
 
 public class DeviceAdapter extends ArrayAdapter<UpnpDevice> {
 

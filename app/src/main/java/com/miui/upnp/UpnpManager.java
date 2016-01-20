@@ -1,4 +1,4 @@
-package ouyang.clingdemo.upnp;
+package com.miui.upnp;
 
 public class UpnpManager {
 

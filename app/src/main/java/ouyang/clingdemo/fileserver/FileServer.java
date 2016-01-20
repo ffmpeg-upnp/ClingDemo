@@ -2,10 +2,9 @@ package ouyang.clingdemo.fileserver;
 
 import android.util.Log;
 
-import java.net.URI;
 import java.util.UUID;
 
-import ouyang.clingdemo.upnp.UpnpException;
+import com.miui.upnp.UpnpException;
 import ouyang.clingdemo.utils.NetUtil;
 
 public class FileServer {

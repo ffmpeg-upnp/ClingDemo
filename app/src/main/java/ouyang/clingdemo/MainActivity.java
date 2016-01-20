@@ -10,9 +10,10 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-import ouyang.clingdemo.upnp.UpnpDevice;
-import ouyang.clingdemo.upnp.UpnpDeviceListener;
-import ouyang.clingdemo.upnp.UpnpManager;
+import com.miui.upnp.UpnpDevice;
+import com.miui.upnp.UpnpDeviceListener;
+import com.miui.upnp.UpnpException;
+import com.miui.upnp.UpnpManager;
 
 public class MainActivity extends AppCompatActivity implements UpnpDeviceListener {
 
@@ -35,11 +36,19 @@ public class MainActivity extends AppCompatActivity implements UpnpDeviceListene
     }
 
     public void onButtonStart(View view) {
-        UpnpManager.getControlPoint().startScan(this);
+        try {
+            UpnpManager.getControlPoint().startScan(this);
+        } catch (UpnpException e) {
+            e.printStackTrace();
+        }
     }
 
     public void onButtonStop(View view) {
-        UpnpManager.getControlPoint().stopScan();
+        try {
+            UpnpManager.getControlPoint().stopScan();
+        } catch (UpnpException e) {
+            e.printStackTrace();
+        }
         deviceAdapter.clear();
     }
 

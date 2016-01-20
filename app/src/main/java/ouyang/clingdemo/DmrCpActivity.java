@@ -5,15 +5,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
-import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import ouyang.clingdemo.fileserver.FileServer;
-import ouyang.clingdemo.upnp.MediaRenderer;
-import ouyang.clingdemo.upnp.UpnpAVControlPoint;
-import ouyang.clingdemo.upnp.UpnpException;
-import ouyang.clingdemo.upnp.UpnpManager;
+import com.miui.upnp.MediaRenderer;
+import com.miui.upnp.UpnpAVControlPoint;
+import com.miui.upnp.UpnpException;
+import com.miui.upnp.UpnpManager;
 
 public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.EventListener {
 
@@ -121,13 +120,14 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
             String ip = UpnpManager.getControlPoint().getDeviceIp(deviceId);
             String url = fileServer.getHttpUrl(musics[musicIndex], ip);
             String title = "";
-            UpnpManager.getControlPoint().play(url, title);
+            // String extra = " {\"sid\":\"21190\",\"song\":\"随它吧\",\"artist\":\"姚贝娜\"}";
+            String extra = " {\"sid\":\"21190\",\"song\":\"随它吧\",\"artist\":\"刘德华\"}";
+            UpnpManager.getControlPoint().play(url, title, extra);
 
             musicIndex = (musicIndex + 1) % musics.length;
         } catch (UpnpException e) {
             e.printStackTrace();
         }
-
     }
 
     public void onButtonPlay(View button) {
@@ -135,6 +135,8 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
     }
 
     public void onButtonStop(View button) {
+        playing = false;
+
         try {
             UpnpManager.getControlPoint().stop();
         } catch (UpnpException e) {
@@ -187,20 +189,7 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
     }
 
     public void onButtonGetPositionInfo(View button) {
-        try {
-            UpnpManager.getControlPoint().getPositionInfo(new UpnpAVControlPoint.GetPositionInfoHandler() {
-                @Override
-                public void onSucceed(long elapsed, long duration) {
-                    Log.d(TAG, String.format("%d,%d", elapsed, duration));
-                }
-
-                @Override
-                public void onFailed(String m) {
-                }
-            });
-        } catch (UpnpException e) {
-            e.printStackTrace();
-        }
+        getDurationLoop();
     }
 
     public void onButtonShowPhoto(View button) {
@@ -236,17 +225,22 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
     @Override
     public void onPlaying() {
         Log.e(TAG, "onPlaying");
+        playing = true;
+        getDurationLoop();
     }
 
     @Override
     public void onNoMediaPresent_Stopped() {
         Log.e(TAG, "onNoMediaPresent_Stopped");
+        playing = false;
+
         doPlay();
     }
 
     @Override
     public void onStopped() {
         Log.e(TAG, "onStopped");
+        playing = false;
     }
 
     @Override
@@ -310,9 +304,13 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
 
         @Override
         public void run() {
-            if (! UpnpManager.getControlPoint().isConnected()) {
-                stopSlideTask();
-                return;
+            try {
+                if (! UpnpManager.getControlPoint().isConnected()) {
+                    stopSlideTask();
+                    return;
+                }
+            } catch (UpnpException e) {
+                e.printStackTrace();
             }
 
             String url = getNextPhoto();
@@ -326,6 +324,35 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
             } catch (UpnpException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private boolean playing = false;
+
+    private void getDurationLoop() {
+        try {
+            UpnpManager.getControlPoint().getPositionInfo(new UpnpAVControlPoint.GetPositionInfoHandler() {
+                @Override
+                public void onSucceed(long elapsed, long duration) {
+                    Log.d(TAG, String.format("%d,%d", elapsed, duration));
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (playing) {
+                        getDurationLoop();
+                    }
+                }
+
+                @Override
+                public void onFailed(String m) {
+                }
+            });
+        } catch (UpnpException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -1,4 +1,4 @@
-package ouyang.clingdemo.upnp;
+package com.miui.upnp;
 
 import android.util.Log;
 
@@ -12,15 +12,16 @@ import org.fourthline.cling.model.types.UDAServiceType;
 import org.fourthline.cling.support.model.PlayMode;
 import org.fourthline.cling.support.model.TransportState;
 
-import ouyang.clingdemo.upnp.callback.AVTransportCallback;
-import ouyang.clingdemo.upnp.callback.RenderingControlCallback;
+import com.miui.upnp.callback.AVTransportCallback;
+import com.miui.upnp.callback.RenderingControlCallback;
 
 public class MediaRenderer {
 
-    private static final String TAG = "MediaRenderer";
-    private static ServiceType AVT = new UDAServiceType("AVTransport");
-    private static ServiceType RCS = new UDAServiceType("RenderingControl");
+    public static ServiceType AVT = new UDAServiceType("AVTransport");
+    public static ServiceType RCS = new UDAServiceType("RenderingControl");
+    public static ServiceType CMS = new UDAServiceType("ConnectionManager");
 
+    private static final String TAG = "MediaRenderer";
     private ControlPoint cp;
     private String deviceId;
     private UpnpDevice device;
@@ -93,6 +94,10 @@ public class MediaRenderer {
     }
 
     public void subscribeAVT() throws UpnpException {
+        if (device == null) {
+            throw new UpnpException("invalid operation: device is null");
+        }
+
         RemoteService avt = device.getService(AVT);
         if (avt == null) {
             throw new UpnpException("invalid operation: service not found");
@@ -102,6 +107,7 @@ public class MediaRenderer {
             @Override
             protected void onDisconnect(CancelReason reason) {
                 Log.d(TAG, "AVT onDisconnect: " + reason);
+                setConnected(false);
             }
 
             @Override
@@ -173,6 +179,10 @@ public class MediaRenderer {
     }
 
     public void subscribeRCS() throws UpnpException {
+        if (device == null) {
+            throw new UpnpException("invalid operation: device is null");
+        }
+
         RemoteService rcs = device.getService(RCS);
         if (rcs == null) {
             throw new UpnpException("invalid operation: service not found");
@@ -183,6 +193,7 @@ public class MediaRenderer {
             @Override
             protected void onDisconnect(CancelReason reason) {
                 Log.d(TAG, "RCS onDisconnect: " + reason);
+                setConnected(false);
             }
 
             @Override
@@ -198,9 +209,15 @@ public class MediaRenderer {
     }
 
     public void unsubscribeAVT() {
+        if (avtCallback != null) {
+            avtCallback.end();
+        }
     }
 
     public void unsubscribeRCS() {
+        if (rcsCallback != null) {
+            rcsCallback.end();
+        }
     }
 
     public Service AVTransport() throws UpnpException {

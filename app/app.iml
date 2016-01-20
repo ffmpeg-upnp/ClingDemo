@@ -86,23 +86,23 @@
     <orderEntry type="jdk" jdkName="Android API 23 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="support-annotations-23.1.1" level="project" />
-    <orderEntry type="library" exported="" name="cling-support-2.0.1" level="project" />
     <orderEntry type="library" exported="" name="design-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="jetty-server-8.1.12.v20130726" level="project" />
     <orderEntry type="library" exported="" name="jetty-client-8.1.12.v20130726" level="project" />
+    <orderEntry type="library" exported="" name="cling-core-2.1.0" level="project" />
     <orderEntry type="library" exported="" name="servlet-api-3.0" level="project" />
     <orderEntry type="library" exported="" name="jetty-servlet-8.1.12.v20130726" level="project" />
     <orderEntry type="library" exported="" name="slf4j-jdk14-1.7.5" level="project" />
     <orderEntry type="library" exported="" name="jetty-io-8.1.12.v20130726" level="project" />
     <orderEntry type="library" exported="" name="recyclerview-v7-23.1.1" level="project" />
+    <orderEntry type="library" exported="" name="seamless-http-1.1.1" level="project" />
     <orderEntry type="library" exported="" name="support-v4-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="jetty-security-8.1.12.v20130726" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-23.1.1" level="project" />
-    <orderEntry type="library" exported="" name="seamless-util-1.1.0" level="project" />
-    <orderEntry type="library" exported="" name="cling-core-2.0.1" level="project" />
+    <orderEntry type="library" exported="" name="seamless-util-1.1.1" level="project" />
+    <orderEntry type="library" exported="" name="cling-support-2.1.0" level="project" />
     <orderEntry type="library" exported="" name="jetty-http-8.1.12.v20130726" level="project" />
-    <orderEntry type="library" exported="" name="seamless-xml-1.1.0" level="project" />
-    <orderEntry type="library" exported="" name="seamless-http-1.1.0" level="project" />
+    <orderEntry type="library" exported="" name="seamless-xml-1.1.1" level="project" />
     <orderEntry type="library" exported="" name="jetty-util-8.1.12.v20130726" level="project" />
     <orderEntry type="library" exported="" name="jetty-continuation-8.1.12.v20130726" level="project" />
   </component>
