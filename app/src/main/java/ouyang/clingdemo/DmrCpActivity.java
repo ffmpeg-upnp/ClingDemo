@@ -253,7 +253,9 @@ public class DmrCpActivity extends AppCompatActivity implements MediaRenderer.Ev
 
         try {
             String ip = UpnpManager.getControlPoint().getDeviceIp(deviceId);
-            url = fileServer.getHttpUrl(photos[photoIndex], ip);
+            String nextPhoto = photos[photoIndex];
+            Log.e(TAG, "next photo: " + nextPhoto);
+            url = fileServer.getHttpUrl(nextPhoto, ip);
             photoIndex = (photoIndex + 1) % photos.length;
         } catch (UpnpException e) {
             e.printStackTrace();

@@ -24,6 +24,7 @@ import org.fourthline.cling.support.avtransport.callback.Stop;
 import org.fourthline.cling.support.connectionmanager.callback.GetProtocolInfo;
 import org.fourthline.cling.support.contentdirectory.DIDLParser;
 import org.fourthline.cling.support.model.DIDLContent;
+import org.fourthline.cling.support.model.DIDLObject;
 import org.fourthline.cling.support.model.PersonWithRole;
 import org.fourthline.cling.support.model.PositionInfo;
 import org.fourthline.cling.support.model.ProtocolInfo;
@@ -37,6 +38,8 @@ import org.fourthline.cling.support.renderingcontrol.callback.SetVolume;
 import org.seamless.util.MimeType;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,6 +77,7 @@ public class UpnpAVControlPoint implements RegistryListener {
         }
 
         this.started = false;
+        this.upnp.getControlPoint().getRegistry().shutdown();
         this.upnp.shutdown();
     }
 
@@ -240,16 +244,25 @@ public class UpnpAVControlPoint implements RegistryListener {
             long id = 0;
             String parentId = "0";
             String album = null;
+            String albumUri = null;
 
             try {
-                album = MediaCover.getAlbumUri(avExtra.getArtist());
+                album = avExtra.getAlbum();
+                albumUri = MediaCover.getAlbumUri(avExtra.getArtist());
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            MusicTrack track = new MusicTrack(String.valueOf(id),
-                    parentId, title, avExtra.getArtist(), album, new PersonWithRole(avExtra.getArtist()));
+            MusicTrack track = new MusicTrack(String.valueOf(id), parentId, title, avExtra.getArtist(), album, new PersonWithRole(avExtra.getArtist()));
             track.setWriteStatus(WriteStatus.NOT_WRITABLE);
+
+            DIDLObject.Property.UPNP.ALBUM_ART_URI albumArtUri = new DIDLObject.Property.UPNP.ALBUM_ART_URI();
+            try {
+                albumArtUri.setValue(new URI(albumUri));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            track.addProperty(albumArtUri);
 
             DIDLContent content = new DIDLContent();
             content.addItem(track);

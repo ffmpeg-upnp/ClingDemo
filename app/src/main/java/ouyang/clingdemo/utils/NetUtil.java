@@ -134,7 +134,7 @@ public class NetUtil {
 //                            .hasMoreElements(); ) {
 //                        InetAddress inetAddress = enumIpAddr.nextElement();
 //                        if (!inetAddress.isLoopbackAddress()
-//                                && (inetAddress.getAddress().length == 4)) {
+//                                && (inetAddress.get().length == 4)) {
 //                            return inetAddress.getHostAddress();
 //                        }
 //                    }

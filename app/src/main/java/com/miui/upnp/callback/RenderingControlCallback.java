@@ -54,7 +54,7 @@ public abstract class RenderingControlCallback extends SubscriptionCallback {
                     RenderingControlVariable.Volume.class
             );
 
-            if (volume != null && volume.getValue().getChannel().equals(Channel.Master)) {
+            if (volume != null) {
                 onMasterVolumeChanged(instanceId.getValue().intValue(), volume.getValue().getVolume());
             }
         }

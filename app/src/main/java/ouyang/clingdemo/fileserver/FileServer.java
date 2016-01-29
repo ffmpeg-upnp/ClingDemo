@@ -35,7 +35,7 @@ public class FileServer {
             url = uri;
         }
         else {
-            String u = server.addLocalFile(UUID.randomUUID().toString(), uri);
+            String u = server.addLocalFile(UUID.nameUUIDFromBytes(uri.getBytes()).toString() + ".png", uri);
             if (u == null) {
                 throw new UpnpException("uri invalid: " + uri);
             }

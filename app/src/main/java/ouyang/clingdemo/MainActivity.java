@@ -92,4 +92,19 @@ public class MainActivity extends AppCompatActivity implements UpnpDeviceListene
             }
         }
     };
+
+    //        String url = "http://10.0.1.57:6095/controller?action=getsysteminfo";
+//        String info = JettyHttpClient.getInstance().get(url);
+//
+//        try {
+//            JSONObject json = new JSONObject(info);
+//
+//            JSONObject data = json.optJSONObject("data");
+//            if (data != null) {
+//                String mac = data.optString("ethmac");
+//                Log.e(TAG, "mac: " + mac);
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 }
