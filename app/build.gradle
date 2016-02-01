@@ -34,11 +34,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     //Cling library
-    compile files('libs/cling-core-2.1.0.jar')
-    compile files('libs/cling-support-2.1.0.jar')
-    compile files('libs/seamless-http-1.1.1.jar')
-    compile files('libs/seamless-util-1.1.1.jar')
-    compile files('libs/seamless-xml-1.1.1.jar')
+    compile files('libs/cling-core-2.0.1.jar')
+    compile files('libs/cling-support-2.0.1.jar')
+    compile files('libs/seamless-http-1.1.0.jar')
+    compile files('libs/seamless-util-1.1.0.jar')
+    compile files('libs/seamless-xml-1.1.0.jar')
 
     //Jetty library
     compile files('libs/jetty-client-8.1.12.v20130726.jar')
@@ -51,6 +51,7 @@ dependencies {
     compile files('libs/jetty-util-8.1.12.v20130726.jar')
     compile files('libs/servlet-api-3.0.jar')
     compile files('libs/slf4j-jdk14-1.7.5.jar')
+
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
 }
