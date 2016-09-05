@@ -27,7 +27,9 @@
         <activity
             android:name=".DmrCpActivity"
             android:label="@string/title_activity_dmr_cp"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
     </application>
 
 </manifest>

@@ -11,6 +11,7 @@ import org.fourthline.cling.model.message.header.UDADeviceTypeHeader;
 import org.fourthline.cling.model.meta.LocalDevice;
 import org.fourthline.cling.model.meta.RemoteDevice;
 import org.fourthline.cling.model.meta.RemoteService;
+import org.fourthline.cling.model.meta.Service;
 import org.fourthline.cling.model.types.UDADeviceType;
 import org.fourthline.cling.registry.Registry;
 import org.fourthline.cling.registry.RegistryListener;
@@ -52,9 +53,6 @@ public class UpnpAVControlPoint implements RegistryListener {
     private UpnpDeviceListener listener;
     private boolean started;
 
-    public UpnpAVControlPoint() {
-    }
-
     public void startScan(UpnpDeviceListener listener) throws UpnpException {
         Log.d(TAG, "startScan");
 
@@ -94,13 +92,7 @@ public class UpnpAVControlPoint implements RegistryListener {
             throw new UpnpException("not started");
         }
 
-        if (dmr.isConnected()) {
-            if (dmr.getDevice().getDeviceIp().equals(ip)) {
-                return true;
-            }
-        }
-
-        return false;
+        return dmr.isConnected() && dmr.getDevice().getDeviceIp().equals(ip);
     }
 
     public String getConnectedDeviceIp() throws UpnpException {
@@ -186,11 +178,7 @@ public class UpnpAVControlPoint implements RegistryListener {
 
                 switch (transportInfo.getCurrentTransportState()) {
                     case STOPPED:
-                        try {
-                            _play(url, title, extra);
-                        } catch (UpnpException e) {
-                            e.printStackTrace();
-                        }
+                        _play(url, title, extra);
                         break;
 
                     case NO_MEDIA_PRESENT:
@@ -200,29 +188,10 @@ public class UpnpAVControlPoint implements RegistryListener {
                     case PAUSED_RECORDING:
                     case RECORDING:
                     case CUSTOM:
-                        Log.d(TAG, "execute: Stop");
-                        try {
-                            upnp.getControlPoint().execute(new Stop(dmr.AVTransport()) {
-                                @Override
-                                public void success(ActionInvocation invocation) {
-                                    super.success(invocation);
-                                    Log.d(TAG, "Stop success");
+                        _stopAndPlay(url, title, extra);
+                        break;
 
-                                    try {
-                                        _play(url, title, extra);
-                                    } catch (UpnpException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-
-                                @Override
-                                public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
-                                    Log.d(TAG, "Stop failure: " + s);
-                                }
-                            });
-                        } catch (UpnpException e) {
-                            e.printStackTrace();
-                        }
+                    default:
                         break;
                 }
             }
@@ -234,7 +203,29 @@ public class UpnpAVControlPoint implements RegistryListener {
         });
     }
 
-    private void _play(String url, String title, String extra) throws UpnpException {
+    private void _stopAndPlay(final String url, final String title, final String extra) {
+        Log.d(TAG, "execute: Stop");
+
+        try {
+            upnp.getControlPoint().execute(new Stop(dmr.AVTransport()) {
+                @Override
+                public void success(ActionInvocation invocation) {
+                    super.success(invocation);
+                    Log.d(TAG, "Stop success");
+                    _play(url, title, extra);
+                }
+
+                @Override
+                public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
+                    Log.d(TAG, "Stop failure: " + s);
+                }
+            });
+        } catch (UpnpException e) {
+            // Ignore exception
+        }
+    }
+
+    private void _play(String url, String title, String extra) {
         Log.d(TAG, "_play: " + url);
         Log.d(TAG, "extra: " + extra);
 
@@ -250,18 +241,21 @@ public class UpnpAVControlPoint implements RegistryListener {
                 album = avExtra.getAlbum();
                 albumUri = MediaCover.getAlbumUri(avExtra.getArtist());
             } catch (IOException e) {
-                e.printStackTrace();
+                // Ignore exception
             }
 
             MusicTrack track = new MusicTrack(String.valueOf(id), parentId, title, avExtra.getArtist(), album, new PersonWithRole(avExtra.getArtist()));
             track.setWriteStatus(WriteStatus.NOT_WRITABLE);
 
             DIDLObject.Property.UPNP.ALBUM_ART_URI albumArtUri = new DIDLObject.Property.UPNP.ALBUM_ART_URI();
-            try {
-                albumArtUri.setValue(new URI(albumUri));
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
+            if (albumUri != null) {
+                try {
+                    albumArtUri.setValue(new URI(albumUri));
+                } catch (URISyntaxException e) {
+                    // Ignore exception
+                }
             }
+
             track.addProperty(albumArtUri);
 
             DIDLContent content = new DIDLContent();
@@ -272,35 +266,36 @@ public class UpnpAVControlPoint implements RegistryListener {
             try {
                 metadata = parser.generate(content);
             } catch (Exception e) {
-                e.printStackTrace();
+                // Ignore exception
             }
 
             Log.d(TAG, "metadata: " + metadata);
         }
 
-        this.upnp.getControlPoint().execute(new SetAVTransportURI(dmr.AVTransport(), url, metadata) {
-            @Override
-            public void success(ActionInvocation invocation) {
-                super.success(invocation);
-                dmr.setIgnoreStopped(false);
+        try {
+            final Service avt = dmr.AVTransport();
 
-                try {
-                    upnp.getControlPoint().execute(new Play(dmr.AVTransport()) {
+            this.upnp.getControlPoint().execute(new SetAVTransportURI(avt, url, metadata) {
+                @Override
+                public void success(ActionInvocation invocation) {
+                    super.success(invocation);
+                    dmr.setIgnoreStopped(false);
+                    upnp.getControlPoint().execute(new Play(avt) {
                         @Override
                         public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
                             Log.d(TAG, "Play failure: " + s);
                         }
                     });
-                } catch (UpnpException e) {
-                    e.printStackTrace();
                 }
-            }
 
-            @Override
-            public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
-                Log.d(TAG, "SetAVTransportURI failure: " + s);
-            }
-        });
+                @Override
+                public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
+                    Log.d(TAG, "SetAVTransportURI failure: " + s);
+                }
+            });
+        } catch (UpnpException e) {
+            // Ignore exception
+        }
     }
 
     public void stop() throws UpnpException {
@@ -446,10 +441,12 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     @Override
     public void remoteDeviceDiscoveryStarted(Registry registry, RemoteDevice remoteDevice) {
+        // NOOP
     }
 
     @Override
     public void remoteDeviceDiscoveryFailed(Registry registry, RemoteDevice remoteDevice, Exception e) {
+        // NOOP
     }
 
     @Override
@@ -459,57 +456,62 @@ public class UpnpAVControlPoint implements RegistryListener {
             return;
         }
 
-        this.upnp.getControlPoint().execute(new GetProtocolInfo(cms) {
-            @Override
-            public void received(ActionInvocation actionInvocation, ProtocolInfos sink, ProtocolInfos source) {
-                UpnpDevice device = new UpnpDevice(remoteDevice);
+        try {
+            this.upnp.getControlPoint().execute(new GetProtocolInfo(cms) {
+                @Override
+                public void received(ActionInvocation actionInvocation, ProtocolInfos sink, ProtocolInfos source) {
+                    UpnpDevice device = new UpnpDevice(remoteDevice);
 
-                Log.d(TAG, device.getFriendlyName() + " " + device.getDeviceIp());
+                    Log.d(TAG, device.getFriendlyName() + " " + device.getDeviceIp());
 
-                for (int i = 0; i < sink.size(); i++) {
-                    ProtocolInfo info = sink.get(i);
-                    MimeType t = info.getContentFormatMimeType();
-                    if (t == null) {
-                        continue;
+                    for (int i = 0; i < sink.size(); i++) {
+                        ProtocolInfo info = sink.get(i);
+                        MimeType t = info.getContentFormatMimeType();
+                        if (t == null) {
+                            continue;
+                        }
+
+                        if (t.getType() == null) {
+                            continue;
+                        }
+
+                        if ("video".equals(t.getType())) {
+                            device.setSupportVideo(true);
+                            break;
+                        }
                     }
 
-                    if (t.getType() == null) {
-                        continue;
-                    }
+                    devices.put(device.getDeviceId(), device);
 
-                    if (t.getType().equals("video")) {
-                        device.setSupportVideo(true);
-                        break;
+                    if (listener != null) {
+                        listener.onDeviceFound(device);
                     }
                 }
 
-                devices.put(device.getDeviceId(), device);
+                @Override
+                public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
+                    Log.e(TAG, "failure: " + s);
 
-                if (listener != null) {
-                    listener.onDeviceFound(device);
+                    UpnpDevice device = new UpnpDevice(remoteDevice);
+                    device.setSupportVideo(true);
+
+                    Log.d(TAG, device.getFriendlyName() + " " + device.getDeviceIp());
+
+                    devices.put(device.getDeviceId(), device);
+
+                    if (listener != null) {
+                        listener.onDeviceFound(device);
+                    }
                 }
-            }
-
-            @Override
-            public void failure(ActionInvocation actionInvocation, UpnpResponse upnpResponse, String s) {
-                Log.e(TAG, "failure: " + s);
-
-                UpnpDevice device = new UpnpDevice(remoteDevice);
-                device.setSupportVideo(true);
-
-                Log.d(TAG, device.getFriendlyName() + " " + device.getDeviceIp());
-
-                devices.put(device.getDeviceId(), device);
-
-                if (listener != null) {
-                    listener.onDeviceFound(device);
-                }
-            }
-        });
+             });
+        } catch(IllegalArgumentException e) {
+            // Ignore exception
+        }
     }
 
     @Override
     public void remoteDeviceUpdated(Registry registry, RemoteDevice remoteDevice) {
+        // NOOP
     }
 
     @Override
@@ -524,17 +526,21 @@ public class UpnpAVControlPoint implements RegistryListener {
 
     @Override
     public void localDeviceAdded(Registry registry, LocalDevice localDevice) {
+        // NOOP
     }
 
     @Override
     public void localDeviceRemoved(Registry registry, LocalDevice localDevice) {
+        // NOOP
     }
 
     @Override
     public void beforeShutdown(Registry registry) {
+        // NOOP
     }
 
     @Override
     public void afterShutdown() {
+        // NOOP
     }
 }
