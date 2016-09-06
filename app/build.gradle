@@ -41,14 +41,14 @@ dependencies {
     compile files('libs/seamless-xml-1.1.1.jar')
 
     //Jetty library
-    compile files('libs/jetty-client-8.1.19.v20160209.jar')
-    compile files('libs/jetty-continuation-8.1.19.v20160209.jar')
-    compile files('libs/jetty-http-8.1.19.v20160209.jar')
-    compile files('libs/jetty-io-8.1.19.v20160209.jar')
-    compile files('libs/jetty-security-8.1.19.v20160209.jar')
-    compile files('libs/jetty-server-8.1.19.v20160209.jar')
-    compile files('libs/jetty-servlet-8.1.19.v20160209.jar')
-    compile files('libs/jetty-util-8.1.19.v20160209.jar')
+    compile files('libs/jetty-client-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-continuation-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-http-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-io-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-security-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-server-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-servlet-8.1.21-SNAPSHOT.jar')
+    compile files('libs/jetty-util-8.1.21-SNAPSHOT.jar')
 
     compile files('libs/servlet-api-3.0.jar')
     compile files('libs/slf4j-api-1.7.16.jar')
